@@ -28,6 +28,9 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+// Слушаем на всех интерфейсах для подключения мобильного приложения
+builder.WebHost.UseUrls("http://0.0.0.0:5159");
+
 // Настраиваем конвейер HTTP-запросов
 if (app.Environment.IsDevelopment())
 {
