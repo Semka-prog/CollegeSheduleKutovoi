@@ -1,5 +1,4 @@
-﻿using CollegeSheduleKutovoi.Models;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 namespace CollegeSchedule.Models
 {
