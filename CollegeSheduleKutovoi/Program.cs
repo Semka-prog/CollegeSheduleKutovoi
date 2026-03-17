@@ -1,4 +1,5 @@
 using CollegeSchedule.Data;
+using CollegeSchedule.Middlewares;
 using CollegeSchedule.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -36,8 +37,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// Добавляем middleware для обработки ошибок (добавим позже)
-// app.UseMiddleware<ExceptionMiddleware>();
+
+
+ app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseAuthorization();
 
