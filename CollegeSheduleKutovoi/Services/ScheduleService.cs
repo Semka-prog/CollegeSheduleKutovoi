@@ -22,6 +22,25 @@ namespace CollegeSchedule.Services
             return BuildScheduleDto(startDate, endDate, schedules);
         }
 
+        /// <summary>
+        /// ПОЛУЧЕНИЕ СПИСКА ВСЕХ ГРУПП
+        /// </summary>
+        public async Task<List<StudentGroupDto>> GetAllGroupsAsync()
+        {
+            // Получаем все группы из базы данных
+            var groups = await _db.StudentGroups
+                .OrderBy(g => g.GroupName) // Сортируем по алфавиту для удобства поиска
+                .Select(g => new StudentGroupDto
+                {
+                    GroupId = g.GroupId,
+                    GroupName = g.GroupName,
+                    Course = g.Course
+                })
+                .ToListAsync();
+
+            return groups;
+        }
+
         private static void ValidateDates(DateTime start, DateTime end)
         {
             if (start > end)
