@@ -30,12 +30,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.collegeshedulekutovoi.utils.SharedPreferencesManager
 import com.example.collegeshedulekutovoi.viewmodel.FavoritesViewModel
 
 @Composable
 fun FavoritesScreen(
-    onGroupSelected: (String) -> Unit,
-    onBack: () -> Unit,
+    onGroupSelected: (String) -> Unit = {},
+    onBack: () -> Unit = {},
     viewModel: FavoritesViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -44,28 +45,15 @@ fun FavoritesScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
+            .padding(bottom = 0.dp)
     ) {
         // Header
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Избранные группы",
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-            IconButton(onClick = onBack) {
-                Icon(
-                    Icons.Default.Close,
-                    contentDescription = "Закрыть",
-                    tint = MaterialTheme.colorScheme.onBackground
-                )
-            }
-        }
+        Text(
+            text = "Избранные группы",
+            style = MaterialTheme.typography.headlineSmall,
+            color = MaterialTheme.colorScheme.onBackground,
+            modifier = Modifier.padding(16.dp)
+        )
         
         // Content
         if (state.favoriteGroups.isEmpty()) {
@@ -113,7 +101,8 @@ fun FavoritesScreen(
                     .fillMaxWidth()
                     .weight(1f)
                     .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 8.dp)
             ) {
                 items(state.favoriteGroups) { group ->
                     FavoriteGroupCard(
