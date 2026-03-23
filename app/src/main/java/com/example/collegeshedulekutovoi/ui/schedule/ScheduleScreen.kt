@@ -47,12 +47,16 @@ fun ScheduleScreen(
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var selectedGroup by remember { mutableStateOf<String?>(SharedPreferencesManager.getSelectedGroup()) }
     var showGroupSelection by remember { mutableStateOf(selectedGroup == null) }
-    var refreshFavorites by remember { mutableStateOf(0) } // Trigger for favorite updates
+    var favoriteUpdateTrigger by remember { mutableStateOf(false) }
 
-    // Compute isFavorited based on selectedGroup and refreshFavorites
-    val isFavorited = remember(selectedGroup, refreshFavorites) {
-        selectedGroup?.let { SharedPreferencesManager.isFavorite(it) } ?: false
-    }
+    // Compute isFavorited based on selectedGroup and favoriteUpdateTrigger
+    val isFavorited = selectedGroup?.let { 
+        SharedPreferencesManager.isFavorite(it).also { 
+            // Use favoriteUpdateTrigger to force recomposition
+            @Suppress("UNUSED_EXPRESSION")
+            favoriteUpdateTrigger
+        }
+    } ?: false
 
     LaunchedEffect(selectedGroup) {
         if (selectedGroup != null && !showGroupSelection) {
@@ -131,13 +135,14 @@ fun ScheduleScreen(
                     
                     IconButton(
                         onClick = {
-                            if (isFavorited) {
-                                SharedPreferencesManager.removeFromFavorites(selectedGroup!!)
+                            val group = selectedGroup!!
+                            if (SharedPreferencesManager.isFavorite(group)) {
+                                SharedPreferencesManager.removeFromFavorites(group)
                             } else {
-                                SharedPreferencesManager.addToFavorites(selectedGroup!!)
+                                SharedPreferencesManager.addToFavorites(group)
                             }
-                            // Trigger refresh by changing the counter
-                            refreshFavorites++
+                            // Trigger UI update by toggling the boolean
+                            favoriteUpdateTrigger = !favoriteUpdateTrigger
                         }
                     ) {
                         Icon(
