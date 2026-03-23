@@ -1,12 +1,18 @@
 package com.example.collegeshedulekutovoi.ui.schedule
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -24,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import com.example.collegeshedulekutovoi.data.api.RetrofitInstance
 import com.example.collegeshedulekutovoi.data.dto.ScheduleByDateDto
 import com.example.collegeshedulekutovoi.ui.groups.GroupSelectionScreen
+import com.example.collegeshedulekutovoi.ui.favorites.FavoritesScreen
 import com.example.collegeshedulekutovoi.utils.getWeekDateRange
 import com.example.collegeshedulekutovoi.utils.SharedPreferencesManager
 
@@ -34,11 +41,14 @@ fun ScheduleScreen() {
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var selectedGroup by remember { mutableStateOf<String?>(SharedPreferencesManager.getSelectedGroup()) }
     var showGroupSelection by remember { mutableStateOf(selectedGroup == null) }
+    var showFavorites by remember { mutableStateOf(false) }
+    var isFavorited by remember { mutableStateOf(false) }
 
     LaunchedEffect(selectedGroup) {
         if (selectedGroup != null && !showGroupSelection) {
             isLoading = true
             errorMessage = null
+            isFavorited = SharedPreferencesManager.isFavorite(selectedGroup!!)
             try {
                 val (startDate, endDate) = getWeekDateRange()
                 scheduleList = RetrofitInstance.api.getSchedule(selectedGroup!!, startDate, endDate)
@@ -50,7 +60,17 @@ fun ScheduleScreen() {
         }
     }
 
-    if (showGroupSelection || selectedGroup == null) {
+    if (showFavorites) {
+        FavoritesScreen(
+            onGroupSelected = { group ->
+                selectedGroup = group
+                SharedPreferencesManager.saveSelectedGroup(group)
+                showFavorites = false
+                showGroupSelection = false
+            },
+            onBack = { showFavorites = false }
+        )
+    } else if (showGroupSelection || selectedGroup == null) {
         GroupSelectionScreen(
             onGroupSelected = { group ->
                 selectedGroup = group
@@ -61,21 +81,64 @@ fun ScheduleScreen() {
     } else {
         Column(modifier = Modifier.fillMaxSize()) {
             // Заголовок с информацией о группе
-            Box(
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "Расписание для группы: $selectedGroup",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.align(Alignment.CenterStart)
-                )
-                IconButton(
-                    onClick = { showGroupSelection = true },
-                    modifier = Modifier.align(Alignment.CenterEnd)
-                ) {
-                    Icon(Icons.Default.Edit, contentDescription = "Изменить группу")
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Расписание",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = selectedGroup ?: "",
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                }
+                
+                // Icons row
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    // Favorite button
+                    IconButton(
+                        onClick = {
+                            if (isFavorited) {
+                                SharedPreferencesManager.removeFromFavorites(selectedGroup!!)
+                            } else {
+                                SharedPreferencesManager.addToFavorites(selectedGroup!!)
+                            }
+                            isFavorited = !isFavorited
+                        }
+                    ) {
+                        Icon(
+                            if (isFavorited) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = "Добавить в избранное",
+                            tint = if (isFavorited) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    
+                    // Favorites list button
+                    IconButton(onClick = { showFavorites = true }) {
+                        Icon(
+                            Icons.Default.Home,
+                            contentDescription = "Избранные группы",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    
+                    // Change group button
+                    IconButton(onClick = { showGroupSelection = true }) {
+                        Icon(
+                            Icons.Default.Edit,
+                            contentDescription = "Изменить группу",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
 
