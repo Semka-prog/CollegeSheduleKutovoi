@@ -47,13 +47,17 @@ fun ScheduleScreen(
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var selectedGroup by remember { mutableStateOf<String?>(SharedPreferencesManager.getSelectedGroup()) }
     var showGroupSelection by remember { mutableStateOf(selectedGroup == null) }
-    var isFavorited by remember { mutableStateOf(false) }
+    var refreshFavorites by remember { mutableStateOf(0) } // Trigger for favorite updates
+
+    // Compute isFavorited based on selectedGroup and refreshFavorites
+    val isFavorited = remember(selectedGroup, refreshFavorites) {
+        selectedGroup?.let { SharedPreferencesManager.isFavorite(it) } ?: false
+    }
 
     LaunchedEffect(selectedGroup) {
         if (selectedGroup != null && !showGroupSelection) {
             isLoading = true
             errorMessage = null
-            isFavorited = SharedPreferencesManager.isFavorite(selectedGroup!!)
             try {
                 val (startDate, endDate) = getWeekDateRange()
                 scheduleList = RetrofitInstance.api.getSchedule(selectedGroup!!, startDate, endDate)
@@ -132,7 +136,8 @@ fun ScheduleScreen(
                             } else {
                                 SharedPreferencesManager.addToFavorites(selectedGroup!!)
                             }
-                            isFavorited = !isFavorited
+                            // Trigger refresh by changing the counter
+                            refreshFavorites++
                         }
                     ) {
                         Icon(
