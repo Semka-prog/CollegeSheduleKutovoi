@@ -52,7 +52,7 @@ fun LessonCard(lesson: com.example.collegeshedulekutovoi.data.dto.LessonDto) {
             lesson.groupParts.forEach { (part, details) ->
                 if (details != null) {
                     Text(
-                        text = "  [${part.name}] ${details.subject}",
+                        text = "  ${details.subject}",
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
