@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Search
@@ -45,11 +44,13 @@ fun ScheduleScreen() {
     var showGroupSelection by remember { mutableStateOf(selectedGroup == null) }
     var isFavorited by remember { mutableStateOf(false) }
     var searchText by remember { mutableStateOf(selectedGroup ?: "") }
+    var displayedGroup by remember { mutableStateOf(selectedGroup) }
 
     LaunchedEffect(selectedGroup) {
         if (selectedGroup != null && !showGroupSelection) {
             isLoading = true
             errorMessage = null
+            displayedGroup = selectedGroup
             isFavorited = SharedPreferencesManager.isFavorite(selectedGroup!!)
             searchText = selectedGroup!!
             try {
@@ -73,57 +74,46 @@ fun ScheduleScreen() {
         )
     } else {
         Column(modifier = Modifier.fillMaxSize()) {
-            // Search bar at the top
-            Row(
+            // Search bar at the top - full width
+            OutlinedTextField(
+                value = searchText,
+                onValueChange = { newText ->
+                    searchText = newText
+                },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                OutlinedTextField(
-                    value = searchText,
-                    onValueChange = { searchText = it },
-                    modifier = Modifier
-                        .weight(1f)
-                        .background(
-                            color = MaterialTheme.colorScheme.surfaceContainer,
-                            shape = RoundedCornerShape(12.dp)
-                        ),
-                    placeholder = { Text("Поиск группы...") },
-                    leadingIcon = {
-                        Icon(
-                            Icons.Default.Search,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    },
-                    trailingIcon = {
-                        if (searchText.isNotEmpty()) {
-                            IconButton(onClick = { searchText = "" }) {
-                                Icon(
-                                    Icons.Default.Clear,
-                                    contentDescription = "Очистить",
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-                    },
-                    singleLine = true
-                )
-                
-                // Edit button
-                IconButton(onClick = { showGroupSelection = true }) {
+                    .padding(12.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.surfaceContainer,
+                        shape = RoundedCornerShape(12.dp)
+                    ),
+                placeholder = { Text("Поиск группы...") },
+                leadingIcon = {
                     Icon(
-                        Icons.Default.Edit,
-                        contentDescription = "Изменить группу",
-                        tint = MaterialTheme.colorScheme.primary
+                        Icons.Default.Search,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                }
-            }
+                },
+                trailingIcon = {
+                    if (searchText.isNotEmpty()) {
+                        IconButton(onClick = { 
+                            searchText = ""
+                            displayedGroup = selectedGroup
+                        }) {
+                            Icon(
+                                Icons.Default.Clear,
+                                contentDescription = "Очистить",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                },
+                singleLine = true
+            )
 
             // Group info and favorite button
-            if (selectedGroup != null) {
+            if (displayedGroup != null) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -132,7 +122,7 @@ fun ScheduleScreen() {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = selectedGroup!!,
+                        text = displayedGroup!!,
                         style = MaterialTheme.typography.headlineSmall,
                         color = MaterialTheme.colorScheme.onBackground
                     )
@@ -140,9 +130,9 @@ fun ScheduleScreen() {
                     IconButton(
                         onClick = {
                             if (isFavorited) {
-                                SharedPreferencesManager.removeFromFavorites(selectedGroup!!)
+                                SharedPreferencesManager.removeFromFavorites(displayedGroup!!)
                             } else {
-                                SharedPreferencesManager.addToFavorites(selectedGroup!!)
+                                SharedPreferencesManager.addToFavorites(displayedGroup!!)
                             }
                             isFavorited = !isFavorited
                         }
