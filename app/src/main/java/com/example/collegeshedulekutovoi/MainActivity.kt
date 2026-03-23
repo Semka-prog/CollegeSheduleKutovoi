@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.example.collegeshedulekutovoi.ui.schedule.ScheduleScreen
+import com.example.collegeshedulekutovoi.ui.MainScreen
 import com.example.collegeshedulekutovoi.ui.theme.CollegeSheduleKutovoiTheme
 import com.example.collegeshedulekutovoi.utils.SharedPreferencesManager
 
@@ -18,7 +18,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             CollegeSheduleKutovoiTheme {
-                ScheduleScreen()
+                MainScreen()
             }
         }
     }
